@@ -1,0 +1,256 @@
+﻿@page "/account"
+@page "/account/discord"
+@page "/account/td"
+@inherits FluxorComponent
+@inject NavigationManager NavigationManager
+@inject IAccountService AccountService
+@inject IJSRuntime JSRuntime
+@inject IState<PaymentState> PaymentState
+@inject Blazor.Fluxor.IStore StoreComponent
+@StoreComponent.Initialize()
+
+<AuthorizeView>
+    <Authorized>
+        @if (Account == null)
+        {
+            <LoadingPicture />
+        }
+        else
+        {
+            <RadzenTemplateForm TItem="Account" Data=@Account Submit=@SaveUserAccountInformation Context="another">
+                <RadzenFieldset>
+                    <h1 style="text-align: center">Account</h1>
+                    <div class="nav-container">
+                        <div>
+                            <div class="top-account-save-button">
+                                <RadzenButton class="button"
+                                              Disabled="@SaveIsDisabled"
+                                              ButtonType="ButtonType.Submit"
+                                              Text="Save" />
+                            </div>
+                            <div class="justify-content-between" style="padding: 0px 64px">
+                                <div class="row contact-info">
+                                    <h5>Contact</h5>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <h5 class="contact-info">First Name</h5>
+                                        <h5 class="contact-info">Last Name</h5>
+                                        <h5 class="contact-info">Email</h5>
+                                        <h5 class="contact-info">Phone Number</h5>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="contact-info">
+                                            <RadzenTextBox @bind-Value="@Account.firstname" Name="First name" />
+                                            <RadzenRequiredValidator Component="First name" Text="First Name is required" />
+                                        </div>
+                                        <div class="contact-info">
+                                            <RadzenTextBox @bind-Value="@Account.lastname" />
+                                        </div>
+                                        <div class="contact-info">
+                                            <RadzenTextBox @bind-Value="@Account.email" Name="Email" />
+                                            <RadzenRequiredValidator Component="Email" Text="Email is required" />
+                                            <RadzenEmailValidator Component="Email" Text="Provide a valid email address" />
+                                        </div>
+                                        <div class="contact-info">
+                                            <RadzenTextBox @bind-Value="@Account.phoneNumber" Name="Phone number" />
+                                            <RadzenRegexValidator Component="Phone number" Text="Invalid phone number" Pattern="^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row contact-info">
+                                    <h5>Discord Account</h5>
+                                </div>
+                                <div class="row contact-info">
+                                    <div class="col-2">
+                                        <RadzenButton class="button active-button"
+                                                      Text="@(_discordAccountActive ? "Active" : "Login")"
+                                                      Click="NavigateToDiscordLogin"
+                                                      Disabled="_discordAccountActive || !SaveIsDisabled" />
+                                    </div>
+                                    @if (_discordAccountActive)
+                                    {
+                                        <div class="col-2">
+                                            <RadzenButton class="button remove-button"
+                                                          Text="Remove"
+                                                          Click="@(async () => {
+                                                                   Account = await AccountService.RemoveConnectedAccountAsync(ConnectedAccounts.Discord);
+                                                                   AccountCopy = Account.DeepCopy();
+                                                               })" />
+                                        </div>
+                                        <div class="col-4">
+                                            <h5>@Account.discordUsername</h5>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="row contact-info">
+                                    <h5>TD Ameritrade Account</h5>
+                                </div>
+                                <div class="row contact-info">
+                                    <div class="col-2">
+                                        <RadzenButton class="button active-button"
+                                                      Text="@(_tdaAccountActive ? "Active" : "Login")"
+                                                      Disabled="_tdaAccountActive || !SaveIsDisabled"
+                                                      Click="NavigateToLogin" />
+                                    </div>
+                                    @if (_tdaAccountActive)
+                                    {
+                                        <div class="col-2">
+                                            <RadzenButton class="button remove-button"
+                                                          Text="Remove"
+                                                          Click="@(async () => {
+                                                                   Account = await AccountService.RemoveConnectedAccountAsync(ConnectedAccounts.TDA);
+                                                                   AccountCopy = Account.DeepCopy();
+                                                               })" />
+                                        </div>
+                                    }
+                                </div>
+                                <div class="row contact-info">
+                                    <h5>Trading Style</h5>
+                                </div>
+                                <div class="row contact-info">
+                                    <div class="col-4">
+                                        <RadzenTextBox Disabled="true" Value="Trading Style 1" />
+                                    </div>
+                                </div>
+                                <div class="row contact-info">
+                                    <h5>Subscription</h5>
+                                </div>
+                                <div class="row contact-info">
+                                    <div class="col-2">
+                                        <RadzenButton class="button active-button"
+                                                      Text="@(_subscriptionActive ? "Active" : "Subscribe")"
+                                                      Disabled="_subscriptionActive || !SaveIsDisabled"
+                                                      Click="@(async () => await StartPaymentClick())" />
+                                    </div>
+                                    @if (_subscriptionActive)
+                                    {
+                                        <div class="col-2">
+                                            <RadzenButton class="button remove-button"
+                                                          Text="Cancel"
+                                                          Click="@(async () => await CancelSubscription())" />
+                                        </div>
+                                    }
+                                </div>
+                                <div class="row" style="padding-top: 16px">
+                                    <div class="col-4 p-0">
+                                        <h5 class="contact-info">Notifications</h5>
+                                        <h5 class="contact-info">When a position is bought:</h5>
+                                        <h5 class="contact-info">When a position is sold:</h5>
+                                    </div>
+                                    <div class="col-2" style="text-align: center">
+                                        <h5 class="contact-info">Email</h5>
+                                        <div class="contact-info">
+                                            <RadzenCheckBox TValue="bool"
+                                                            ValueChanged="@((e) => Account.buyEmail = e ? 1 : 0)"
+                                                            Value="@(Account.buyEmail == 1 ? true : false)" />
+                                        </div>
+                                        <div class="contact-info">
+                                            <RadzenCheckBox TValue="bool"
+                                                            ValueChanged="@((e) => Account.sellEmail = e ? 1 : 0)"
+                                                            Value="@(Account.sellEmail == 1 ? true : false)" />
+                                        </div>
+                                    </div>
+                                    <div class="col-2" style="text-align: center">
+                                        <h5 class="contact-info">Text</h5>
+                                        <div class="contact-info">
+                                            <RadzenCheckBox TValue="bool"
+                                                            ValueChanged="@((e) => Account.buyTextMessage = e ? 1 : 0)"
+                                                            Value="@(Account.buyTextMessage == 1 ? true : false)"
+                                                            Disabled="!_phoneNumberActive" />
+                                        </div>
+                                        <div class="contact-info">
+                                            <RadzenCheckBox TValue="bool"
+                                                            ValueChanged="@((e) => Account.sellTextMessage = e ? 1 : 0)"
+                                                            Value="@(Account.sellTextMessage == 1 ? true : false)"
+                                                            Disabled="!_phoneNumberActive" />
+                                        </div>
+                                    </div>
+                                    <div class="col-2" style="text-align: center">
+                                        <h5 class="contact-info">Discord</h5>
+                                        <div class="contact-info">
+                                            <RadzenCheckBox TValue="bool"
+                                                            ValueChanged="@((e) => Account.buyDiscord = e ? 1 : 0)"
+                                                            Value="@(Account.buyDiscord == 1 ? true : false)"
+                                                            Disabled="!_discordAccountActive" />
+                                        </div>
+                                        <div class="contact-info">
+                                            <RadzenCheckBox TValue="bool"
+                                                            ValueChanged="@((e) => Account.sellDiscord = e ? 1 : 0)"
+                                                            Value="@(Account.sellDiscord == 1 ? true : false)"
+                                                            Disabled="!_discordAccountActive" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bottom-account-save-button">
+                                <RadzenButton class="button"
+                                              Disabled="@Account.Equals(AccountCopy)"
+                                              ButtonType="ButtonType.Submit"
+                                              Text="Save" />
+                            </div>
+                        </div>
+                    </div>
+                </RadzenFieldset>
+            </RadzenTemplateForm>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    public Account Account { get; set; }
+    public Account AccountCopy { get; set; }
+    public bool SaveIsDisabled => Account.Equals(AccountCopy);
+    private bool _discordAccountActive => !string.IsNullOrEmpty(Account.discordUsername);
+    private bool _tdaAccountActive => !string.IsNullOrEmpty(Account.tdAmeritradeUsername);
+    private bool _phoneNumberActive => !string.IsNullOrEmpty(Account.phoneNumber);
+    private bool _subscriptionActive => Account.subscriptionActive == 1 ? true : false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetAccountInformationAsync();
+
+        if (NavigationManager.Uri.Contains(ApplicationConstants.TdRoute))
+            Account = await AccountService.SaveUsersCredentialsAsync();
+
+        if (NavigationManager.Uri.Contains(ApplicationConstants.DiscordRoute))
+            Account = await AccountService.SaveUsersDiscordAccountAsync();
+    }
+
+    private void NavigateToLogin() => NavigationManager.NavigateTo(ApplicationConstants.TDALoginUrl);
+
+    private void NavigateToDiscordLogin() => NavigationManager.NavigateTo(ApplicationConstants.DiscordLoginUrl);
+
+    private async Task GetAccountInformationAsync()
+    {
+        Account = await AccountService.GetAccountAsync();
+        AccountCopy = Account.DeepCopy();
+    }
+
+    private async Task SaveUserAccountInformation(Account account)
+    {
+        AccountCopy = Account.DeepCopy();
+        await AccountService.SaveUserAccountInformationAsync(Account);
+        StateHasChanged();
+    }
+
+    protected async Task StartPaymentClick()
+    {
+        var userId = await AccountService.GetUserIdAsync();
+        await JSRuntime.InvokeAsync<string>("createCheckoutSession", userId);
+    }
+
+    protected async Task CancelSubscription()
+    {
+        var success = await AccountService.CancelSubscriptionAsync();
+        if (success)
+        {
+            Account.subscriptionActive = 0;
+            AccountCopy.subscriptionActive = 0;
+            StateHasChanged();
+        }
+    }
+}

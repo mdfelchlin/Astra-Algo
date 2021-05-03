@@ -1,0 +1,193 @@
+﻿@page "/dashboard"
+@inject IAccountService AccountService
+@inject IJSRuntime JSRuntime
+@using System.Globalization
+
+<AuthorizeView>
+    <Authorized>
+        @if (_tdAccount != null && _assetAllocation.Count > 0 || _positions.Count > 0)
+        {
+            @if (_assetAllocation.Count > 0)
+            {
+                <h1 class="text-center">Welcome @_account.firstname @_account.lastname!</h1>
+                <h1 class="text-center">Account Type : @_tdAccount.type</h1>
+                <div class="asset-table">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th class="dashboard-th"> Stock Ticker </th>
+                                <th class="dashboard-th"> Open Price </th>
+                                <th class="dashboard-th"> Change in Price at Open </th>
+                                <th class="dashboard-th"> Average Price per Stock </th>
+                                <th class="dashboard-th"> Quantity </th>
+                                <th class="dashboard-th"> Current Gain / Loss Per </th>
+                                <th class="dashboard-th"> Total Net Gain / Loss </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (KeyValuePair<string, Stock> s in _stockDictionary)
+                            {
+                                var symbol = _tdAccount.positions.Find(x => x.instrument.symbol == @s.Value.symbol);
+                                <tr style="border: 1px solid black">
+                                    <td class="text-center">
+                                        <a href="https://finance.yahoo.com/quote/@s.Value.symbol">
+                                            @s.Value.symbol
+                                        </a>
+                                    </td>
+                                    <td class="text-center"> 
+                                        @s.Value.openPrice
+                                    </td>
+                                    <td class="text-center" style="background-color:@NetPositiveCss(s.Value.netChange)">
+                                        @s.Value.netChange
+                                    </td>
+                                    <td class="text-center"> 
+                                        @symbol.averagePrice
+                                    </td>
+                                    <td class="text-center"> 
+                                        @symbol.longQuantity
+                                    </td>
+                                    <td class="text-center" style="background-color:@NetPositiveCss(NetAmount(@s.Value.openPrice, symbol.averagePrice))">
+                                        @NetAmount(@s.Value.openPrice, symbol.averagePrice) 
+                                    </td>
+                                    <td class="text-center" style="background-color:@NetPositiveCss(@Subtract(@s.Value.openPrice, symbol.averagePrice, symbol.longQuantity))">
+                                        @Subtract(@s.Value.openPrice, symbol.averagePrice, symbol.longQuantity)
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row justify-content-md-center" style="background-color : white">
+                    <div class="col-md-6 col-sm-12 p-4">
+                        <RadzenChart>
+                            <RadzenDonutSeries Data="@_assetAllocation" Title="Amount" CategoryProperty="Description" ValueProperty="Amount">
+                                <TitleTemplate>
+                                    <div class="rz-donut-content">
+                                        <div>Money</div>
+                                        <div>Allocation</div>
+                                    </div>
+                                </TitleTemplate>
+                            </RadzenDonutSeries>
+                        </RadzenChart>
+                    </div>
+                </div>
+            }
+            @if (_positions.Count > 0)
+            {
+                <div class="row justify-content-md-center" style="background-color : lightcyan">
+                    <div class="col-md-6 col-sm-12 p-4">
+                        <div class="row">
+                            <div class="col-md-12 col-sm-12 p-4">
+                                <RadzenChart>
+                                    <RadzenColumnSeries Data="@_positions" CategoryProperty="Description" Title="Amount of Shares" LineType="LineType.Dashed" ValueProperty="Amount" />
+                                    <RadzenColumnOptions Radius="23" />
+                                    <RadzenValueAxis Min="0" Max="50" Step="5" />
+                                </RadzenChart>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else if (_tdAccount == null && !_isLoading)
+        {
+            
+            <div class="account-not-found">
+                <div class="container">
+                    <center>
+                        <img src="/Pictures/not_found.png" style="width:600px; height:400px;" />
+                        <h1 class="display-4">No Account Linked</h1>
+                        <p class="lead" style ="color:white;">
+                            Looks like you have not logged into your TD Ameritrade account!<br /> Visit the
+                            account page to log in.
+                        </p>
+                        <a href="/Account">Account Page</a>
+                        
+                    </center>
+                </div>
+            </div>
+        }
+        else if (_isLoading)
+        {
+                <LoadingPicture />
+        }
+</Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private SecuritiesAccount _tdAccount { get; set; }
+    private Account _account { get; set; } = new Account();
+    private Dictionary<string, Stock> _stockDictionary { get; set; }
+    private List<DataItem> _assetAllocation { get; set; } = new List<DataItem>();
+    private List<DataItem> _positions { get; set; } = new List<DataItem>();
+    private string _stocks = string.Empty;
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetAccountInformationAsync();
+        _account = await AccountService.GetAccountAsync();
+    }
+
+    private async Task GetAccountInformationAsync()
+    {
+        _tdAccount = await AccountService.GetTDAccountAsync();
+        if (_tdAccount != null)
+        {
+            CreateAccountAllocation();
+
+            if (_tdAccount.positions != null)
+                CreateStockAllocation();
+
+            _stockDictionary = await AccountService.GetInstrumentsAsync(_stocks);
+        }
+        _isLoading = false;
+        StateHasChanged();
+    }
+
+    private void CreateAccountAllocation()
+    {
+        var balance = _tdAccount.type.Contains("MARGIN")
+            ? _tdAccount.initialBalances.cashBalance
+            : _tdAccount.currentBalances.cashAvailableForTrading;
+
+        _assetAllocation.Add(new DataItem
+        {
+            Description = "Cash Available for Trading",
+            Amount = balance
+        });
+
+        _assetAllocation.Add(new DataItem
+        {
+            Description = "Cash in Equities",
+            Amount = _tdAccount.initialBalances.longStockValue
+        });
+    }
+
+    private void CreateStockAllocation()
+    {
+        foreach (var position in _tdAccount.positions.Where(x => x.instrument.assetType == "EQUITY"))
+        {
+            _positions.Add(new DataItem
+            {
+                Description = position.instrument.symbol,
+                Amount = (Decimal)position.longQuantity
+            });
+
+            _stocks = _stocks == string.Empty
+                ? position.instrument.symbol
+                : _stocks + "," + position.instrument.symbol;
+        }
+    }
+
+    private string FormatAsUSD(object value) => ((double)value).ToString("C0", CultureInfo.CreateSpecificCulture("en-US"));
+
+    private double NetAmount(Double x, Double y) => Math.Round(x - y, 2);
+
+    private double Subtract(Double x, Double y,Double q) => Math.Round((x - y) * q, 2);
+
+    private string NetPositiveCss(Double change) => change < 0 ? "lightcoral" : "lightgreen";
+}

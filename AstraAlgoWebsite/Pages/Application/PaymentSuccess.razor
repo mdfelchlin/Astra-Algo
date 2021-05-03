@@ -1,0 +1,12 @@
+﻿@page "/success"
+@inject IAccountService AccountService
+
+<h3>PaymentSuccess</h3>
+
+@code {      
+    protected override async Task OnInitializedAsync()
+    {
+        await AccountService.ActivateSubscriptionAsync();
+        await base.OnInitializedAsync();
+    }
+}

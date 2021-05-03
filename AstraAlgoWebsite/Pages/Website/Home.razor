@@ -1,0 +1,222 @@
+﻿@page "/"
+@inject IJSRuntime JSRuntime
+<AuthorizeView>
+    <Authorized>
+        <RedirectToDashboard/>
+    </Authorized>
+    <NotAuthorized>
+        <head>
+            <meta charset="UTF-8">
+            <title>Homepage</title>
+            <!--<link rel="stylesheet" href="/css/nav-style.css">-->
+
+        </head>
+
+        <body> 
+            
+            
+            
+            
+            
+            <header class="v-header container-video">
+                <div class="fullscreen-video-wrap">
+                    <video src="/Pictures/market-loop.mp4" autoplay="" loop="">
+                    </video>
+                </div>
+                <div class="header-overlay"></div>
+                    <div class="header-content">
+                    <h1>
+                        Welcome to<br /><span>Astra Algo</span>
+                    </h1>
+                     <a href="authentication/login?returnUrl=https://localhost:44352/Account">Create an Account</a>
+                    </div>
+            </header>
+
+
+
+
+
+
+            <!--<header class="body-header">
+                <div class="welcome-text">
+                    <h1>
+                        Welcome to<br /><span>Astra Algo</span>
+                    </h1>
+                    <a href="#">Create an Account</a>
+                </div>
+            </header>-->
+            
+            <div class="wrapper-section">
+                <section id="second-section" class="second-section">
+                    <section class="two-section">
+                        
+                            <div class="vertical-center">
+                                <h1 class="second-section-h1">Make Money In The <br>Stock Market</h1>
+                                
+                                    <h2 class="second-section-h2">
+                                        Fully autonomous trading, and thousands of trading alerts at your fingertips.
+                                    </h2>
+                                
+                                <a href="#" class="abutton">More about us</a>
+                            </div>
+                        
+                    </section>
+                    <section class="two-section">
+                        <div class="zoom">
+                            <img src="/Pictures/fingertips.jpeg">
+                        </div>
+
+                    </section>
+                </section>
+            </div>
+            
+            <section class="banner">
+                <h1>Our Services</h1>
+            </section>
+            
+            <div class="wrapper-section">
+                <section class="fourth-section">
+                    <section class = "four-section">
+                        <div class="img-container">
+                            <img src="/Pictures/AdobeStock_302181503.jpeg">
+                        </div>
+                    </section>
+
+                    <section class="four-section">
+                        <div class="img-container">
+                            <img src="/Pictures/AdobeStock_230168061.jpeg">
+                        </div>
+                    </section>
+                </section>
+            </div>
+
+            <div class="wrapper-section">
+                <section class="fourth-section">
+                    <section class = "four-section">
+                        <div class="vertical-center">
+                                <h1>Astra Algo V1</h1>
+                                
+                                <h2>
+                                    Where seconds can mean the difference between profit and loss, Astra Algo V1 was built to monitor
+                                    the strongest of indicators which drive price change.  With so much data to process,
+                                    Astra's Algorithm makes it possible for everyday retail traders to take positions with the confidence that
+                                    every fundamental is behind them.
+
+                                </h2>
+                                <div class="center-button">
+                                <a href="#">Read More</a></div>
+
+                        </div>
+                    </section>
+
+                    <section class="four-section">
+                        <div class="vertical-center">
+                                <h1>Remove Emotions</h1>
+                                
+                                <h2>
+                                        The greatest threat to a traders success is emotion. Astra Algo removes all emotion by providing fully autonomous trading where users won't miss a single entry or exit 
+                                        maximizing profitability. For those traders who aren't ready for fully autonomous trading, can follow our discord buy/sell signals sent straight to your smart phone device.
+                                </h2>
+                                
+                                <div class="center-button">
+                                <a href="#">Read More</a></div>
+                
+                                
+                        </div>
+                    </section>
+                </section>
+            </div>
+
+            <div class="wrapper-section">
+                <section class="fourth-section">
+                    <section class = "four-section">
+                        <div class="img-container">
+                            <img src="/Pictures/AdobeStock_212616746.jpeg">
+                        </div>
+                    </section>
+
+                    <section class="four-section">
+                        <div class="img-container">
+                    
+                            <img src="/Pictures/AdobeStock_283528648.jpeg">
+                        </div>
+                    </section>
+                </section>
+            </div>
+
+            <div class="wrapper-section">
+                <section class="fourth-section">
+                    <section class = "four-section">
+                        <div class="vertical-center">
+                                <h1>Discord Buy/Sell Signals</h1>
+                                
+                                <h2>
+                                    Connect with a group of like-minded people who share trade ideas & callouts live. Get access to 24/7 support, thousands of automated trading signals, and private direct messages if you are set up
+                                    with our automated trading system.
+                                </h2>
+
+                                <div class="center-button">
+                                <a href="#">Read More</a></div>
+                                
+                        </div>
+                    </section>
+
+                    <section class="four-section">
+                        <div class="vertical-center">
+                                <h1>Automated Trading</h1>
+                                
+                                <h2>
+                                        Let our algorithm make money for you. Parternering with TD Ameritrade users with cash and margin accounts can link their
+                                        Astra Algo account with TD Ameritrade and not worry about missing a single buy or sell signal. Maximizing your profit potential and minimizing your risk levels.
+                                </h2>
+
+                                <div class="center-button">
+                                <a href="#">Read More</a></div>
+                                
+                        </div>
+                    </section>
+                </section>
+            </div>
+            
+            <section class = "guarantee">
+                <table>
+                <tr>
+                    <td>
+                        <img src="/Pictures/money-back-gold.png" style="width: 212px; height: 150px;">
+                        <br>
+                        100% Satisfaction Guarantee
+                    </td>
+
+                    <td >
+                        <img src="/Pictures/support-blue.png" style="width: 168px; height: 150px;">
+                        <br>
+                        24/7 Support
+                        <br>
+                    </td>
+                    <td>
+                        <img src="/Pictures/refund-green.png" style="width: 150px; height: 150px;">
+                        <br>
+                        30 Day Refund
+                    </td>
+
+                </tr>
+                </table>
+            </section>
+            
+
+        </body>
+        </NotAuthorized>
+</AuthorizeView>
+
+@code {
+
+
+
+    async Task LoadFile()
+    {
+        await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./TextMovementEffects.js");
+
+    }
+
+
+}
