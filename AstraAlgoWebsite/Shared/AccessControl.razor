@@ -1,0 +1,27 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject NavigationManager Navigation
+@inject SignOutSessionStateManager SignOutManager
+
+<AuthorizeView>
+    <Authorized>
+        <div>
+            <RadzenButton class="button"
+                          Click="BeginSignOut" Text="Log out"/>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <RadzenButton class="button"
+                      Text="Login" 
+                      Click="@(() => Navigation.NavigateTo("authentication/login?returnUrl=https://localhost:44352/Account"))"/>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code{
+    private async Task BeginSignOut(MouseEventArgs args)
+    {
+        await SignOutManager.SetSignOutState();
+        Navigation.NavigateTo("authentication/logout?returnUrl=https://localhost:44352/how-it-works");
+    }
+}

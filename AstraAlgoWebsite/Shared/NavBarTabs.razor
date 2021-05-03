@@ -1,0 +1,60 @@
+﻿<head>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans&display=swap" rel="stylesheet">
+    <meta charset="utf-8" />
+</head>
+<body class="nav-body">
+    <AuthorizeView>
+
+        <Authorized>
+            <header class="nav-header">
+                <div class="container">
+                    <a href="/Account">
+                        <img src="/Pictures/AstraAlgo-v2-scaled3.png" alt="logo" class="logo">
+                    </a>
+                    <nav>
+                        
+                        <ul>
+                            <li>
+                                <a href="/Dashboard">Dashboard</a>
+                            </li>
+                            <li>
+                                <a href="/Account">account</a>
+                            </li>
+                            <li><AccessControl /></li>
+                        </ul>
+                    </nav>
+                </div>
+            </header>
+        </Authorized>
+        <NotAuthorized>
+            <header class="nav-header">
+                <div class="container">
+                    <a href="/">
+                        <img src="/Pictures/AstraAlgo-v2-scaled3.png" alt="logo" class="logo">
+                    </a>
+                    <nav>
+                        <ul>
+                            <li>
+                                <a href="/How-It-Works">How It Works?</a>
+                            </li>
+                            <li>
+                                <a href="/Documentation">Documentation</a>
+                            </li>
+                            <li>
+                                <a href="/Pricing">Pricing</a>
+                            </li>
+                            <li style="padding-top: -5px;"><AccessControl /></li>
+
+                        </ul>
+
+
+                    </nav>
+                </div>
+            </header>
+        </NotAuthorized>
+    </AuthorizeView>
+</body>
+
+@code {
+
+}
